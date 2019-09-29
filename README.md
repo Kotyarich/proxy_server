@@ -1,1 +1,16 @@
-# Proxy server for Web applications security technopark course
+## Proxy server for "Web applications security" technopark course
+
+### Requirements:
+
+- Proxy HTTP requests
+- Proxy HTTPS requests
+- Ability of repeating old requests
+
+### To generate certificate:
+
+``` bash
+openssl genrsa -out ca.key 2048
+openssl req -new -x509 -days 3650 -key ca.key -out ca.crt -subj "/CN=proxy2 CA"
+openssl genrsa -out cert.key 2048
+mkdir certs/
+```
