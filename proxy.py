@@ -6,9 +6,10 @@ import ssl
 import time
 from string import Template
 from subprocess import Popen, PIPE
-
 from http_parser.pyparser import HttpParser
 from _thread import *
+
+import saver
 
 
 listening_port = 43432
@@ -26,7 +27,6 @@ def start():
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(('localhost', listening_port))
         s.listen(max_conn)
-        print("Started")
     except:
         print("Cant init socket")
         s.close()
@@ -102,6 +102,8 @@ def proxy(host, port, conn, data):
 
         s.close()
         conn.close()
+        sql_conn = saver.get_connection()
+        saver.save_request(conn, host, port, data, 0)
     except socket.error:
         s.close()
         conn.close()
@@ -136,11 +138,11 @@ def https_proxy(host, port, conn):
     conn_s = ssl.wrap_socket(conn, keyfile=cert_key, certfile=cert_path, server_side=True)
     conn_s.do_handshake()
 
-    data = conn_s.recv(40960)
+    request = conn_s.recv(40960)
     # Establishing https connection with server
     context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
     s_sock = context.wrap_socket(tunn, server_hostname=host)
-    s_sock.send(data)
+    s_sock.send(request)
     # Getting response
     parser = HttpParser()
     resp = b''
@@ -157,6 +159,9 @@ def https_proxy(host, port, conn):
             break
 
     conn_s.sendall(resp)
+    # Save information about request
+    sql_conn = saver.get_connection()
+    saver.save_request(sql_conn, host, port, request, 1)
 
     s_sock.close()
     conn_s.close()
