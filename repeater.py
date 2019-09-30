@@ -1,4 +1,8 @@
-from proxy import start, saver
+from proxy import start, saver, buffer_size
+from http_parser.pyparser import HttpParser
+import socket
+import gzip
+import ssl
 import _thread
 
 
@@ -18,8 +22,47 @@ def print_requests(last_id):
 
 
 def repeat(req_id):
-    req = saver.get_request(cursor, req_id)
-    print(req)
+    _, host, port, request, is_https = saver.get_request(cursor, req_id)
+    # Connecting to server
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((host, port))
+    if is_https:
+        context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+        sock = context.wrap_socket(sock, server_hostname=host)
+    sock.send(request)
+
+    # Getting response
+    parser = HttpParser()
+    resp = b''
+    while True:
+        data = sock.recv(buffer_size)
+        if not data:
+            break
+
+        received = len(data)
+        _ = parser.execute(data, received)
+        if parser.is_partial_body():
+            resp += parser.recv_body()
+
+        if parser.is_message_complete():
+            break
+    headers = parser.get_headers()
+    # Decode answer
+    if headers['CONTENT-ENCODING'] == 'gzip':
+        resp = gzip.decompress(resp)
+        resp = str(resp, 'utf-8')
+    else:
+        try:
+            resp = resp.decode('utf-8')
+        except UnicodeDecodeError:
+            print('Body wasn\'t decoded')
+
+    print("{} HTTP/{}.{}".format(parser.get_status_code(), *parser.get_version()))
+    for header in headers:
+        print('{}: {}'.format(header, headers.get(header)))
+    print()
+    print(resp)
+    print()
 
 
 def main():

@@ -23,11 +23,11 @@ cert_dir = 'certs/'
 
 
 def start():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(('localhost', listening_port))
         s.listen(max_conn)
-    except:
+    except socket.error:
         print("Cant init socket")
         s.close()
         sys.exit(2)
@@ -87,8 +87,8 @@ def parse_start_string(con, data):
 
 
 def proxy(host, port, conn, data):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
         s.send(data)
 
@@ -103,7 +103,7 @@ def proxy(host, port, conn, data):
         s.close()
         conn.close()
         sql_conn = saver.get_connection()
-        saver.save_request(conn, host, port, data, 0)
+        saver.save_request(sql_conn, host, port, data, 0)
     except socket.error:
         s.close()
         conn.close()
