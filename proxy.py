@@ -12,7 +12,7 @@ from _thread import *
 import saver
 
 
-listening_port = 43432
+listening_port = 43433
 max_conn = 5
 buffer_size = 8192
 # Paths to certificates
@@ -83,7 +83,8 @@ def parse_start_string(con, data):
         else:
             proxy(host, port, con, data)
     except Exception as e:
-        print(e)
+        # print(e)
+        pass
 
 
 def proxy(host, port, conn, data):
@@ -104,10 +105,10 @@ def proxy(host, port, conn, data):
         conn.close()
         sql_conn = saver.get_connection()
         saver.save_request(sql_conn, host, port, data, 0)
+        sql_conn.close()
     except socket.error:
         s.close()
         conn.close()
-        print(socket.error)
         sys.exit(1)
 
 
@@ -162,6 +163,7 @@ def https_proxy(host, port, conn):
     # Save information about request
     sql_conn = saver.get_connection()
     saver.save_request(sql_conn, host, port, request, 1)
+    sql_conn.close()
 
     s_sock.close()
     conn_s.close()

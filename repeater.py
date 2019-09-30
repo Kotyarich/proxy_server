@@ -6,12 +6,11 @@ import ssl
 import _thread
 
 
-sqlite_con = saver.get_connection()
-cursor = sqlite_con.cursor()
-
-
 def print_requests(last_id):
+    sqlite_con = saver.get_connection()
+    cursor = sqlite_con.cursor()
     reqs = saver.get_requests(cursor, last_id)
+    sqlite_con.close()
     if len(reqs) == 0:
         return -1
 
@@ -22,7 +21,10 @@ def print_requests(last_id):
 
 
 def repeat(req_id):
+    sqlite_con = saver.get_connection()
+    cursor = sqlite_con.cursor()
     _, host, port, request, is_https = saver.get_request(cursor, req_id)
+    sqlite_con.close()
     # Connecting to server
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((host, port))
@@ -82,9 +84,10 @@ def main():
             continue
 
         if action == 1:
-            if prev_action == 2:
+            if last_id > -1:
                 last_id += saver.requests_number
             last_id = print_requests(last_id)
+            print(last_id)
         elif action == 2:
             last_id -= saver.requests_number
             print_requests(last_id)
