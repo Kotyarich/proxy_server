@@ -2,9 +2,9 @@
 
 ### Requirements:
 
-- Proxy HTTP requests
-- Proxy HTTPS requests
-- Ability of repeating old requests
+- [x] Proxy HTTP requests
+- [x] Proxy HTTPS requests
+- [x] Ability of repeating old requests
 
 ### To generate certificate:
 
