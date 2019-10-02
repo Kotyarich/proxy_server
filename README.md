@@ -17,6 +17,7 @@ mkdir certs/
 
 ### Starting
 
+Proxy uses port 43433
 To init data base for saving requests:
 ```bash
 python saver.py
