@@ -17,16 +17,16 @@ mkdir certs/
 
 ### Starting
 
-Proxy uses port 43433
-To init data base for saving requests:
+Proxy uses port 43433.<br>To init data base for saving requests:
+
 ```bash
 python saver.py
 ```
-To start:
+To start:  
 ```bash
 python repeater.py
 ```
-To start proxy without repeater:
+To start proxy without repeater:  
 ```bash
 python proxy.py
 ```
